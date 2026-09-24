@@ -42,7 +42,7 @@ class CoderAgenticSystemIT {
 
     @Test
     void supervisor_coder_file_generation() {
-        Path tempDir = Path.of("/tmp/coder");
+        Path tempDir = Path.of("/tmp/supervisor-coder");
         CoderSystem coder = CoderAgenticSystem.supervisorCoder(plannerModel(Models.MODEL_PROVIDER.OPENAI), coderModel());
         String result = coder.code(
                 "Create a Java file named HelloWorld.java with a main method that prints 'Hello World'",
@@ -53,7 +53,7 @@ class CoderAgenticSystemIT {
         System.out.println("Working dir: " + tempDir.toAbsolutePath());
         System.out.println("Result: " + result);
 
-        generateReport(coder.agentMonitor(), Path.of("src", "test", "resources", "coder.html"));
+        generateReport(coder.agentMonitor(), Path.of("src", "test", "resources", "supervisor-coder.html"));
     }
 
     @Test
@@ -74,18 +74,18 @@ class CoderAgenticSystemIT {
 
     @Test
     void supervisor_should_fix_buggy_calculator() throws Exception {
-        should_fix_buggy_calculator(CoderAgenticSystem.supervisorCoder(coderModel()));
+        should_fix_buggy_calculator("supervisor", CoderAgenticSystem.supervisorCoder(coderModel()));
     }
 
     @Test
     void workflow_should_fix_buggy_calculator() throws Exception {
-        should_fix_buggy_calculator(CoderAgenticSystem.workflowCoder(coderModel()));
+        should_fix_buggy_calculator("workflow", CoderAgenticSystem.workflowCoder(coderModel()));
     }
 
-    private void should_fix_buggy_calculator(CoderSystem coder) throws Exception {
+    private void should_fix_buggy_calculator(String type, CoderSystem coder) throws Exception {
         // Copy the buggy project to a temp directory so the agent can modify files freely
         Path source = Path.of("src/test/resources/buggy-project");
-        Path workDir = Path.of("/tmp/buggy-calculator");
+        Path workDir = Path.of("/tmp/buggy-calculator-" + type);
         copyDirectory(source, workDir);
 
         String result = coder.code(
@@ -99,7 +99,7 @@ class CoderAgenticSystemIT {
         System.out.println("Working dir: " + workDir.toAbsolutePath());
         System.out.println("Result: " + result);
 
-        generateReport(coder.agentMonitor(), Path.of("src", "test", "resources", "bugfix.html"));
+        generateReport(coder.agentMonitor(), Path.of("src", "test", "resources", type + "-bugfix.html"));
     }
 
     @Test
